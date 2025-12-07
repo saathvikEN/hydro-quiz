@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Futuristic Hydroelectric Quiz</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #0a0f24, #091530, #0b1a40);
+        color: white;
+        overflow: hidden;
+    }
+    .container {
+        width: 90%;
+        max-width: 900px;
+        margin: auto;
+        padding-top: 40px;
+        text-align: center;
+        animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .question-box {
+        background: rgba(255,255,255,0.08);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 0 25px rgba(0,200,255,0.4);
+        backdrop-filter: blur(10px);
+        margin-bottom: 20px;
+        animation: pop 0.6s ease;
+    }
+
+    @keyframes pop {
+        from { transform: scale(0.7); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .choice {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 12px;
+        font-size: 20px;
+        cursor: grab;
+        transition: 0.3s;
+    }
+    .choice:hover {
+        background: rgba(0,255,255,0.3);
+    }
+
+    #dropzone {
+        margin-top: 20px;
+        padding: 40px;
+        border: 3px dashed cyan;
+        border-radius: 15px;
+        min-height: 120px;
+        font-size: 22px;
+        color: cyan;
+        transition: 0.3s;
+    }
+    #dropzone.hover {
+        background: rgba(0,255,255,0.2);
+    }
+
+    #scoreboard {
+        font-size: 28px;
+        margin-top: 25px;
+        animation: glow 2s infinite;
+    }
+
+    @keyframes glow {
+        0% { text-shadow: 0 0 10px cyan; }
+        50% { text-shadow: 0 0 20px white; }
+        100% { text-shadow: 0 0 10px cyan; }
+    }
+
+    #timer {
+        font-size: 24px;
+        margin-top: 10px;
+        color: yellow;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>⚡ Futuristic Hydroelectric Quiz ⚡</h1>
+    <div id="timer">⏳ Time Left: 120s</div>
+
+    <div id="quiz-area" class="question-box"></div>
+
+    <div id="dropzone">Drag your answer here</div>
+
+    <div id="scoreboard">Score: 0</div>
+</div>
+
+<script>
+let score = 0;
+let timeLeft = 120;
+let currentQ = 0;
+
+const timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText = `⏳ Time Left: ${timeLeft}s`;
+    if (timeLeft <= 0) endGame();
+}, 1000);
+
+const questions = [
+    {
+        q: "What does the turbine do?",
+        choices: ["Make water flow faster","Gives fresh air to aquatic habitats","Rotates because of the flowing water and creates electricity","There for a show"],
+        answer: 2
+    },
+    {
+        q: "What structure is needed for hydroelectricity to hold water?",
+        choices: ["Dam","Factory","Pond","River"],
+        answer: [0, 3],
+        multi: true
+    },
+    {
+        q: "What is the turbine connected to?",
+        choices: ["Transmission wires","Water","Generator","Other"],
+        answer: 2
+    },
+    {
+        q: "What does the generator do?",
+        choices: ["Convert potential to kinetic energy","Converts rotation into mechanical energy","Converts mechanical to electrical energy","Other"],
+        answer: 2
+    },
+    {
+        q: "Which dam powers 75%-86% of Paraguay’s electricity?",
+        choices: ["Three Gorges Dam","Michigan’s Dam","Other","Itaipú Dam"],
+        answer: 3
+    },
+    {
+        q: "What do you need to open for the water to reach the turbine?",
+        choices: ["Dam’s gate opens","Turbine gates open","Penstock’s intake gate opens","Other"],
+        answer: 2
+    },
+    {
+        q: "When does hydro electricity come in handy?",
+        choices: ["During the summer","When a factory needs more electricity","When there's not enough time to make electricity another way","When there is a flood or flash flood"],
+        answer: 2
+    },
+    {
+        q: "Why does it help during floods?",
+        choices: ["So fishes can live and help power plant","Flowing water makes turbine rotate faster","They store flood water and purify it","So everyone gets a holiday"],
+        answer: 2
+    },
+    {
+        q: "What's the role of the penstock?",
+        choices: ["Make water reach turbine at high speed","Connect turbine to generator","Keep water level equal","Other"],
+        answer: 0
+    },
+    {
+        q: "Where can you build a hydro power plant?",
+        choices: ["River","Dam","Reservoir","Lake","All except lake"],
+        answer: 4
+    },
+    {
+        q: "Where is the world’s largest hydro power plant located?",
+        choices: ["Brazil","China","Mexico","Japan"],
+        answer: 1
+    },
+    {
+        q: "When was the first hydro power plant created?",
+        choices: ["1944","1872","1882","1908"],
+        answer: 2
+    }
+];
+
+function loadQ() {
+    let q = questions[currentQ];
+    let box = document.getElementById("quiz-area");
+
+    box.innerHTML = `<h2>${q.q}</h2>`;
+
+    q.choices.forEach((c, i) => {
+        box.innerHTML += `<div class='choice' draggable='true' ondragstart='drag(event)' data-index='${i}'>${c}</div>`;
+    });
+}
+
+function drag(e) {
+    e.dataTransfer.setData("text", e.target.getAttribute("data-index"));
+}
+
+const dropzone = document.getElementById("dropzone");
+
+dropzone.ondragover = (e) => {
+    e.preventDefault();
+    dropzone.classList.add("hover");
+};
+
+dropzone.ondragleave = () => dropzone.classList.remove("hover");
+
+dropzone.ondrop = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("hover");
+
+    let answerIndex = e.dataTransfer.getData("text");
+
+    if (answerIndex == questions[currentQ].answer) {
+        score++;
+        document.getElementById("scoreboard").innerText = "Score: " + score;
+    }
+
+    currentQ++;
+    if (currentQ < questions.length) loadQ();
+    else endGame();
+};
+
+function endGame() {
+    clearInterval(timer);
+    document.getElementById("quiz-area").innerHTML = `<h1>Quiz Complete!</h1><p>Your final score: ${score}</p>`;
+    dropzone.style.display = "none";
+}
+
+loadQ();
+</script>
+</body>
+</html>
