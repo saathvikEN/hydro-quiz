@@ -1,151 +1,195 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Futuristic Kahoot-Style Hydroelectric Quiz</title>
-  <style>
+<meta charset="UTF-8">
+<title>PHYSICS EXPO QUIZ – All About Hydroelectricity</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      overflow: hidden;
+        margin: 0;
+        font-family: 'Orbitron', sans-serif;
+        background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
     }
-
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(circle at center, #0ff 0%, #003 70%, #000 100%);
-      animation: pulse 6s infinite alternate ease-in-out;
-      z-index: -1;
+    .quiz-container {
+        background: rgba(0,0,0,0.7);
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 700px;
+        width: 90%;
+        box-shadow: 0 0 20px #00ffff;
+        animation: fadeIn 1s ease;
     }
-    @keyframes pulse {
-      from { filter: brightness(0.7); }
-      to { filter: brightness(1.3); }
+    h1 {
+        text-align: center;
+        color: #00ffff;
+        margin-bottom: 20px;
     }
-
-    .screen {
-      display: none;
-      text-align: center;
-      padding: 40px;
+    #timer {
+        font-size: 18px;
+        text-align: right;
+        margin-bottom: 10px;
     }
-
-    #startScreen {
-      display: block;
-      margin-top: 100px;
+    #question {
+        font-size: 22px;
+        margin-bottom: 15px;
+        min-height: 60px;
     }
-
-    .btn {
-      padding: 20px;
-      margin: 15px;
-      border-radius: 15px;
-      font-size: 20px;
-      cursor: pointer;
-      border: none;
-      color: white;
-      width: 70%;
+    .options button {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        background: #00cccc;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
     }
-
-    .a { background:#ff5959; }
-    .b { background:#4caf50; }
-    .c { background:#2196f3; }
-    .d { background:#ff9800; }
-    .e { background:#9c27b0; }
-    .f { background:#00bcd4; }
-
-    .btn:hover { opacity: 0.85; }
-
-    #timer { font-size: 28px; margin-bottom: 20px; }
-  </style>
+    .options button:hover {
+        background: #00ffff;
+        transform: scale(1.05);
+    }
+    #nextBtn {
+        background: #ff0080;
+        color: #fff;
+        margin-top: 15px;
+        display: none;
+    }
+    #scoreboard {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 28px;
+        color: #00ffea;
+        animation: pop 1s ease;
+    }
+    @keyframes fadeIn {
+        from {opacity:0; transform: translateX(50px);}
+        to {opacity:1; transform: translateX(0);}
+    }
+    @keyframes pop {
+        0% {transform: scale(0);}
+        60% {transform: scale(1.2);}
+        100% {transform: scale(1);}
+    }
+</style>
 </head>
 <body>
-
-<div id="startScreen" class="screen">
-  <h1>🚀 Hydroelectric Power Quiz</h1>
-  <button class="btn c" onclick="startQuiz()">Start</button>
+<div class="quiz-container">
+    <h1>PHYSICS EXPO QUIZ – All About Hydroelectricity</h1>
+    <div id="timer">Time Left: 02:00</div>
+    <div id="question">Loading...</div>
+    <div class="options" id="choices"></div>
+    <button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+    <div id="scoreboard"></div>
 </div>
 
-<div id="questionScreen" class="screen">
-  <div id="timer">⏳ Time Left: <span id="time">20</span>s</div>
-  <h2 id="questionText"></h2>
-  <div id="answers"></div>
-</div>
-
-<div id="endScreen" class="screen">
-  <h1>Your Score:</h1>
-  <h2 id="finalScore"></h2>
-  <button class="btn c" onclick="location.reload()">Restart</button>
-</div>
+<!-- Buzzer sounds -->
+<audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
 <script>
-let questions = [
-  { q: "What does the turbine do?", a: ["Make water flow faster","Gives fresh air to aquatic habitats","Rotates because of the flowing water and creates electricity","There for a show"], c: [2], pts:1 },
-  { q: "What structure is needed for hydroelectricity to hold water?", a: ["Dam","Factory","Pond","River"], c: [0,3], pts:1 },
-  { q: "What is the turbine connected to?", a: ["Transmission wires","Water","Generator"], c: [2], pts:1 },
-  { q: "What does the generator do?", a: ["Convert potential to kinetic energy","Converts rotation into mechanical energy","Converts mechanical to electrical energy","Other"], c: [2], pts:1 },
-  { q: "Which dam powers 75%-86% of Paraguay’s electricity?", a: ["Three gorges dam","Michigan’s dam","Other","Itaipú Dam"], c: [3], pts:2 },
-  { q: "What do you need to open for water to reach the turbine?", a: ["Dam’s gate opens","Turbine gates open","Penstock intake gate opens","Other"], c: [2], pts:1 },
-  { q: "When does hydro electricity come in handy?", a: ["During the summer","When a factory needs more electricity","When not enough time to make electricity another way","During a flood/flash flood"], c: [3], pts:1 },
-  { q: "Why does it help during floods?", a: ["So fishes can live","Turbine spins faster","They store flood water & purify it later","Everyone gets holiday"], c: [2], pts:1 },
-  { q: "What’s the role of the penstock?", a: ["Make water reach turbine fast","Connect turbine to generator","Keep water level equal","Other"], c: [0], pts:1 },
-  { q: "Where can you build a hydro plant?", a: ["River","Dam","Reservoir","Lake","All of them","All except lake"], c: [5], pts:2 },
-  { q: "Where is the world's largest hydro plant?", a: ["Brazil","China","Mexico","Japan"], c: [1], pts:2 },
-  { q: "When was the first hydro plant created?", a: ["1944","1872","1882","1908"], c: [2], pts:2 }
+// Quiz Data
+const quiz = [
+{q:"What does the turbine do?", options:["Make water flow faster","Gives fresh air to aquatic habitats","Rotates because of the flowing water and creates electricity","There for a show"], answer:2},
+{q:"What structure is needed for hydroelectricity to hold water?", options:["Dam","Factory","Pond","River"], answer:0},
+{q:"What is the turbine connected to?", options:["Transmission wires","Water","Generator","Other"], answer:2},
+{q:"What does the generator do?", options:["Convert potential to kinetic energy","Converts rotation into mechanical energy","Converts mechanical into electrical energy","Converts kinetic into electrical energy"], answer:2},
+{q:"Which do you need to open for water to reach the turbine?", options:["Dam’s gate","Turbine gates","Penstock gates","Other"], answer:2},
+{q:"Which dam powers 75 to 85 percent of Paraguay's electricity?", options:["Three Gorges Dam","Michigan's Dam","Other","Itaipu Dam"], answer:3},
+{q:"When does hydroelectricity come in handy?", options:["During summer","When a factory needs more electricity","When there is not enough time to make electricity in another way","When there is a flood"], answer:3},
+{q:"Why does hydroelectricity help during floods?", options:["So that people can live","Since the water is flowing faster and it rotates the turbine faster","Because they get to store a lot of water for later","So that everyone gets a holiday"], answer:1},
+{q:"What’s the role of the penstock?", options:["Make water reach the turbine at a high speed","Connect the turbine to the generator","Keep the water level equal","Other"], answer:0},
+{q:"Which one of these places can you build a hydro power plant?", options:["River","Dam","Reservoir","Lake","All of them","All of them except lake"], answer:5},
+{q:"Where is the world's largest hydro power plant located?", options:["Brazil","China","Mexico","Japan"], answer:1},
+{q:"When was the first hydro power plant created?", options:["1944","1872","1882","1908"], answer:2}
 ];
 
-let current = 0;
+let index = 0;
 let score = 0;
-let time = 20;
-let timer;
+let timer = 120; // 2 minutes
 
-function startQuiz() {
-  document.getElementById("startScreen").style.display = "none";
-  document.getElementById("questionScreen").style.display = "block";
-  loadQuestion();
+const questionEl = document.getElementById("question");
+const choicesEl = document.getElementById("choices");
+const nextBtn = document.getElementById("nextBtn");
+const scoreboardEl = document.getElementById("scoreboard");
+const correctSound = document.getElementById("correctSound");
+const wrongSound = document.getElementById("wrongSound");
+const timerEl = document.getElementById("timer");
+
+// Timer
+let countdown = setInterval(() => {
+    timer--;
+    let minutes = String(Math.floor(timer/60)).padStart(2,'0');
+    let seconds = String(timer%60).padStart(2,'0');
+    timerEl.textContent = `Time Left: ${minutes}:${seconds}`;
+    if(timer<=0){
+        clearInterval(countdown);
+        endQuiz();
+    }
+},1000);
+
+function loadQuestion(){
+    questionEl.innerText = quiz[index].q;
+    choicesEl.innerHTML = "";
+    nextBtn.style.display = "none";
+    quiz[index].options.forEach((opt,i)=>{
+        let btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.onclick = ()=> checkAnswer(i);
+        choicesEl.appendChild(btn);
+    });
 }
 
-function loadQuestion() {
-  time = 20;
-  document.getElementById("time").textContent = time;
-
-  timer = setInterval(() => {
-    time--;
-    document.getElementById("time").textContent = time;
-    if (time <= 0) answer(-1);
-  }, 1000);
-
-  let q = questions[current];
-  document.getElementById("questionText").textContent = q.q;
-
-  let ansDiv = document.getElementById("answers");
-  ansDiv.innerHTML = "";
-
-  q.a.forEach((ans,i)=>{
-    let btn = document.createElement("button");
-    btn.className = "btn " + ['a','b','c','d','e','f'][i];
-    btn.textContent = ans;
-    btn.onclick = () => answer(i);
-    ansDiv.appendChild(btn);
-  });
+function checkAnswer(selected){
+    const correct = quiz[index].answer;
+    if(selected === correct){
+        score++;
+        correctSound.play();
+    } else {
+        wrongSound.play();
+    }
+    document.querySelectorAll("#choices button").forEach(btn=> btn.disabled=true);
+    nextBtn.style.display="block";
 }
 
-function answer(i) {
-  clearInterval(timer);
-  let q = questions[current];
-
-  if (q.c.includes(i)) score += q.pts;
-
-  current++;
-  if (current >= questions.length) endQuiz();
-  else loadQuestion();
+function nextQuestion(){
+    index++;
+    if(index<quiz.length){
+        loadQuestion();
+    } else {
+        endQuiz();
+    }
 }
 
-function endQuiz() {
-  document.getElementById("questionScreen").style.display = "none";
-  document.getElementById("endScreen").style.display = "block";
-  document.getElementById("finalScore").textContent = score;
+function endQuiz(){
+    clearInterval(countdown);
+    questionEl.style.display="none";
+    choicesEl.style.display="none";
+    nextBtn.style.display="none";
+    timerEl.style.display="none";
+    scoreboardEl.style.display="block";
+    animateScore(0, score);
 }
+
+// Animated scoreboard
+function animateScore(current, final){
+    if(current<=final){
+        scoreboardEl.textContent = `Your Score: ${current}/${quiz.length}`;
+        current++;
+        setTimeout(()=>animateScore(current,final),50);
+    }
+}
+
+loadQuestion();
 </script>
-
 </body>
 </html>
